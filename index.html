@@ -74,6 +74,64 @@
   .topbar button:hover{background:var(--bg-soft);color:var(--ink)}
   .topbar .voice-status{font-size:12px;color:var(--muted);margin-right:6px}
 
+  /* ---------- Sticky search bar (top of main-wrap) ---------- */
+  .search-bar{position:sticky;top:0;z-index:26;background:var(--bg);
+    border-bottom:1px solid var(--rule);
+    padding:10px 16px;padding-top:max(10px, env(safe-area-inset-top));
+    backdrop-filter:saturate(180%) blur(10px);
+    -webkit-backdrop-filter:saturate(180%) blur(10px)}
+  .search-bar .search-wrap{max-width:680px;margin:0 auto;position:relative}
+  .search-bar input{width:100%;padding:12px 38px 12px 42px;
+    border:1px solid var(--rule);border-radius:999px;background:var(--card);
+    color:var(--ink);font:inherit;font-size:15px;outline:none;
+    transition:border-color .15s, box-shadow .15s}
+  .search-bar input:focus{border-color:var(--accent-soft);
+    box-shadow:0 0 0 3px rgba(61,91,58,.12)}
+  .search-bar::before{content:"⌕";position:absolute;left:50%;top:50%;
+    transform:translate(calc(-50% - 300px),-50%);color:var(--muted);
+    font-size:18px;pointer-events:none;z-index:1}
+  .search-bar .clear-btn{position:absolute;right:18px;top:50%;
+    transform:translateY(-50%);background:transparent;border:none;
+    color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;
+    line-height:1;border-radius:50%;display:none}
+  .search-bar .clear-btn:hover{color:var(--ink);background:var(--bg-soft)}
+  .search-bar.has-text .clear-btn{display:block}
+  .search-results{position:absolute;top:calc(100% + 4px);left:0;right:0;
+    z-index:27;background:var(--card);border:1px solid var(--rule);
+    border-radius:8px;max-height:60vh;overflow-y:auto;display:none;
+    box-shadow:0 8px 30px var(--popup-shadow)}
+  .search-results.show{display:block}
+  .search-results .item{padding:11px 16px;cursor:pointer;
+    border-bottom:1px solid var(--rule);display:flex;gap:10px;
+    align-items:baseline;transition:background .1s}
+  .search-results .item:last-child{border-bottom:none}
+  .search-results .item:hover,.search-results .item.active{
+    background:var(--bg-soft)}
+  .search-results .item .word{font-weight:600;color:var(--ink);
+    font-size:15px;min-width:90px}
+  .search-results .item .word mark{background:var(--hilite);
+    padding:0 1px;border-radius:2px}
+  .search-results .item .ipa{color:var(--accent);font-size:13px;
+    font-style:italic;flex:1}
+  .search-results .item .chapter{margin-left:auto;color:var(--muted);
+    font-size:11px;white-space:nowrap;letter-spacing:.02em}
+  .search-results .empty{padding:18px;color:var(--muted);text-align:center;
+    font-size:13.5px}
+  .search-results .empty mark{background:var(--hilite);padding:0 1px;
+    border-radius:2px}
+  .search-results .count{padding:8px 16px;font-size:11px;
+    color:var(--muted);letter-spacing:.05em;text-transform:uppercase;
+    border-bottom:1px solid var(--rule);background:var(--bg-soft)}
+
+  /* search-flash highlight on the navigated card */
+  @keyframes searchFlash{
+    0%{box-shadow:0 0 0 0 var(--accent), 0 1px 0 var(--popup-shadow)}
+    20%{box-shadow:0 0 0 6px var(--accent-soft), 0 1px 0 var(--popup-shadow)}
+    100%{box-shadow:0 0 0 0 var(--accent-soft), 0 1px 0 var(--popup-shadow)}
+  }
+  .word-card.search-flash{animation:searchFlash 1.8s ease;
+    scroll-margin-top:80px}
+
   /* ---------- Page header ---------- */
   header.page{padding:46px 24px 30px;text-align:center;max-width:880px;
     margin:0 auto 8px}
@@ -86,14 +144,6 @@
   header.page .stats{margin:18px auto 0;display:flex;gap:22px;
     justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--ink-soft)}
   header.page .stats b{color:var(--accent);font-weight:600}
-  .search-bar{max-width:680px;margin:22px auto 0;position:relative}
-  .search-bar input{width:100%;padding:13px 18px 13px 42px;
-    border:1px solid var(--rule);border-radius:999px;background:var(--card);
-    color:var(--ink);font:inherit;font-size:15px;outline:none}
-  .search-bar input:focus{border-color:var(--accent-soft);
-    box-shadow:0 0 0 3px rgba(61,91,58,.12)}
-  .search-bar::before{content:"⌕";position:absolute;left:16px;top:50%;
-    transform:translateY(-50%);color:var(--muted);font-size:18px}
   .pitfall-banner{max-width:760px;margin:16px auto 0;background:var(--pitfall);
     border-left:3px solid #c14539;padding:10px 16px;font-size:13.5px;
     color:#5a2a23;border-radius:0 6px 6px 0}
@@ -136,7 +186,16 @@
     .word-ipa{font-size:13.5px}
     header.page h1{font-size:26px}
     header.page{padding:28px 18px 22px}
-    .search-bar input{font-size:16px;padding:12px 16px 12px 40px}
+    .search-bar{padding:8px 12px;padding-top:max(8px, env(safe-area-inset-top))}
+    .search-bar input{font-size:16px;padding:11px 36px 11px 38px}
+    .search-bar::before{font-size:16px;left:50%;
+      transform:translate(calc(-50% - 280px),-50%)}
+    .search-results{font-size:14px}
+    .search-results .item{padding:10px 12px;gap:8px}
+    .search-results .item .word{font-size:14px;min-width:70px}
+    .search-results .item .ipa{font-size:12px}
+    .search-results .item .chapter{font-size:10px;max-width:120px;
+      overflow:hidden;text-overflow:ellipsis}
     .pitfall{font-size:14px;padding:9px 12px}
     .popup{max-width:calc(100vw - 24px);left:12px !important;right:12px;font-size:14px}
     .popup .pword{font-size:18px}
@@ -235,7 +294,7 @@
     .sidebar-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);
       z-index:19;opacity:0;pointer-events:none;transition:opacity .2s ease}
     .sidebar-backdrop.open{opacity:1;pointer-events:auto}
-    .mobile-topbar{display:flex;position:sticky;top:0;z-index:15;
+    .mobile-topbar{display:flex;position:sticky;top:64px;z-index:15;
       background:var(--bg-soft);border-bottom:1px solid var(--rule);
       padding:10px 14px;padding-top:max(10px, env(safe-area-inset-top));
       align-items:center;gap:10px;backdrop-filter:saturate(180%) blur(10px);
@@ -397,6 +456,17 @@
 
 <div class="main-wrap" id="mainWrap">
 
+<div class="search-bar" id="searchBar">
+  <div class="search-wrap">
+    <input type="search" id="q"
+      placeholder="Find a word, IPA, or part of any definition…"
+      autocomplete="off" autocorrect="off" autocapitalize="off"
+      spellcheck="false" enterkeyhint="search" inputmode="search">
+    <button class="clear-btn" id="qClear" type="button" aria-label="Clear search">×</button>
+    <div class="search-results" id="searchResults" role="listbox" aria-label="Search results"></div>
+  </div>
+</div>
+
 <div class="mobile-topbar" id="mobileTopbar" aria-hidden="false">
   <div class="ch-title" id="mobileChTitle">IELTS Vocab<small>All Chapters</small></div>
   <div class="ch-progress" id="mobileChProgress">0%</div>
@@ -412,9 +482,6 @@
     <span><b>100%</b> Oxford-sourced IPA &amp; definitions</span>
     <span><b>All</b> explanations in English</span>
   </div>
-  <div class="search-bar"><input type="search" id="q"
-    placeholder="Type any word, example or part of speech to filter…"
-    autocomplete="off"></div>
   <div class="pitfall-banner"><b>Native-speaker pitfall series is on.</b>
     Every card ends with a <b>“⚠ Native-speaker pitfall”</b> block — that is
     where the real test-day English lives. Read it once out loud.</div>
@@ -25042,29 +25109,175 @@ document.querySelectorAll('.word-card').forEach(card => {
 });
 
 /* ============================================================
-   4. Search filter
+   4. Search — Find & Jump (replaces the old "filter" behaviour)
    ============================================================ */
 const q = document.getElementById('q');
-q.addEventListener('input', () => {
+const qClear = document.getElementById('qClear');
+const searchBar = document.getElementById('searchBar');
+const searchResults = document.getElementById('searchResults');
+
+// Build word index once at page load
+const wordIndex = [];
+document.querySelectorAll('.word-card').forEach(card => {
+  const wm = card.querySelector('.word-main');
+  const ipa = card.querySelector('.word-ipa');
+  if (!wm) return;
+  const section = card.closest('section[id^="ch"]');
+  wordIndex.push({
+    word: wm.textContent.trim(),
+    wordLower: wm.textContent.trim().toLowerCase(),
+    ipa: ipa ? ipa.textContent.trim() : '',
+    ipaLower: ipa ? ipa.textContent.trim().toLowerCase() : '',
+    chapterId: section ? section.id : '',
+    card: card,
+    hay: (card.dataset.haystack || card.textContent || '').toLowerCase()
+  });
+});
+
+const chapterLabels = {};
+document.querySelectorAll('.list-divider').forEach(div => {
+  const m = div.textContent.match(/Chapter\s+(\d+)\s+·\s+([^/]+)\s*\/\s*([^(]+)\(/);
+  if (m) chapterLabels['ch' + m[1]] = m[3].trim();
+});
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+function highlightMatch(text, needle) {
+  if (!needle) return escapeHtml(text);
+  const lower = text.toLowerCase();
+  const idx = lower.indexOf(needle);
+  if (idx < 0) return escapeHtml(text);
+  return escapeHtml(text.slice(0, idx))
+    + '<mark>' + escapeHtml(text.slice(idx, idx + needle.length)) + '</mark>'
+    + escapeHtml(text.slice(idx + needle.length));
+}
+
+let activeIdx = -1;
+let currentMatches = [];
+
+function renderSearchResults() {
   const needle = q.value.trim().toLowerCase();
-  document.querySelectorAll('.word-card').forEach(card => {
-    const hay = (card.dataset.haystack || '').toLowerCase();
-    const text = card.textContent.toLowerCase();
-    const match = !needle || hay.includes(needle) || text.includes(needle);
-    card.style.display = match ? '' : 'none';
+  if (!needle) {
+    searchResults.classList.remove('show');
+    searchBar.classList.remove('has-text');
+    activeIdx = -1;
+    currentMatches = [];
+    return;
+  }
+  searchBar.classList.add('has-text');
+
+  // Score: starts-with (best) → word includes → ipa includes → haystack includes
+  const starts = [], mid = [], late = [];
+  for (const item of wordIndex) {
+    if (item.wordLower.startsWith(needle)) starts.push(item);
+    else if (item.wordLower.includes(needle)) mid.push(item);
+    else if (item.ipaLower && item.ipaLower.includes(needle)) mid.push(item);
+    else if (item.hay.includes(needle)) late.push(item);
+  }
+  currentMatches = [...starts, ...mid, ...late].slice(0, 12);
+
+  if (currentMatches.length === 0) {
+    searchResults.innerHTML = '<div class="empty">No words match &ldquo;<mark>'
+      + escapeHtml(needle) + '</mark>&rdquo;. Try a shorter prefix.</div>';
+    searchResults.classList.add('show');
+    activeIdx = -1;
+    return;
+  }
+
+  const total = starts.length + mid.length + late.length;
+  let html = '<div class="count">' + total + ' match' + (total !== 1 ? 'es' : '')
+    + ' &middot; showing top ' + currentMatches.length + '</div>';
+  html += currentMatches.map((item, i) => {
+    const chNum = item.chapterId.replace('ch', '');
+    const chName = (chapterLabels[item.chapterId] || '').slice(0, 28);
+    return '<div class="item" role="option" data-i="' + i + '">'
+      + '<span class="word">' + highlightMatch(item.word, needle) + '</span>'
+      + '<span class="ipa">' + escapeHtml(item.ipa) + '</span>'
+      + '<span class="chapter">Ch ' + chNum
+      + (chName ? ' &middot; ' + escapeHtml(chName) : '') + '</span>'
+      + '</div>';
+  }).join('');
+  searchResults.innerHTML = html;
+  searchResults.classList.add('show');
+  activeIdx = -1;
+
+  // Bind click handlers
+  searchResults.querySelectorAll('.item').forEach(el => {
+    el.addEventListener('mousedown', (e) => {
+      // mousedown not click so it fires before the input's blur
+      e.preventDefault();
+      const i = parseInt(el.dataset.i, 10);
+      navigateToMatch(i);
+    });
   });
-  // Hide chapter headers that have no visible cards
-  document.querySelectorAll('.list-divider').forEach(div => {
-    let next = div.nextElementSibling;
-    let hasVisible = false;
-    while (next && !next.classList?.contains('list-divider')) {
-      if (next.classList?.contains('word-card') && next.style.display !== 'none') {
-        hasVisible = true; break;
-      }
-      next = next.nextElementSibling;
+}
+
+function navigateToMatch(i) {
+  const item = currentMatches[i];
+  if (!item) return;
+  item.card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // Add flash class, then remove
+  item.card.classList.remove('search-flash');
+  // force reflow so the animation restarts
+  void item.card.offsetWidth;
+  item.card.classList.add('search-flash');
+  setTimeout(() => item.card.classList.remove('search-flash'), 1900);
+  // Clear search and close dropdown
+  q.value = '';
+  renderSearchResults();
+  q.blur();
+}
+
+function updateActiveItem() {
+  const items = searchResults.querySelectorAll('.item');
+  items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+  if (activeIdx >= 0 && items[activeIdx]) {
+    items[activeIdx].scrollIntoView({ block: 'nearest' });
+  }
+}
+
+q.addEventListener('input', renderSearchResults);
+q.addEventListener('focus', () => { if (q.value.trim()) renderSearchResults(); });
+q.addEventListener('keydown', (e) => {
+  const items = searchResults.querySelectorAll('.item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (items.length === 0) return;
+    activeIdx = Math.min(activeIdx + 1, items.length - 1);
+    updateActiveItem();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (items.length === 0) return;
+    activeIdx = Math.max(activeIdx - 1, 0);
+    updateActiveItem();
+  } else if (e.key === 'Enter') {
+    if (currentMatches.length === 0) return;
+    e.preventDefault();
+    const i = activeIdx >= 0 ? activeIdx : 0;
+    navigateToMatch(i);
+  } else if (e.key === 'Escape') {
+    if (q.value) {
+      q.value = '';
+      renderSearchResults();
+    } else {
+      searchResults.classList.remove('show');
+      q.blur();
     }
-    div.style.display = hasVisible ? '' : 'none';
-  });
+  }
+});
+if (qClear) qClear.addEventListener('click', () => {
+  q.value = '';
+  q.focus();
+  renderSearchResults();
+});
+// Close dropdown when clicking outside
+document.addEventListener('mousedown', (e) => {
+  if (!searchBar.contains(e.target)) {
+    searchResults.classList.remove('show');
+  }
 });
 
 /* ============================================================
