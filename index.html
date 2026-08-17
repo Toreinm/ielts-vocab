@@ -25117,13 +25117,13 @@ const searchBar = document.getElementById('searchBar');
 const searchResults = document.getElementById('searchResults');
 
 // Build word index once at page load
-const wordIndex = [];
+const searchIndex = [];
 document.querySelectorAll('.word-card').forEach(card => {
   const wm = card.querySelector('.word-main');
   const ipa = card.querySelector('.word-ipa');
   if (!wm) return;
   const section = card.closest('section[id^="ch"]');
-  wordIndex.push({
+  searchIndex.push({
     word: wm.textContent.trim(),
     wordLower: wm.textContent.trim().toLowerCase(),
     ipa: ipa ? ipa.textContent.trim() : '',
@@ -25171,7 +25171,7 @@ function renderSearchResults() {
 
   // Score: starts-with (best) → word includes → ipa includes → haystack includes
   const starts = [], mid = [], late = [];
-  for (const item of wordIndex) {
+  for (const item of searchIndex) {
     if (item.wordLower.startsWith(needle)) starts.push(item);
     else if (item.wordLower.includes(needle)) mid.push(item);
     else if (item.ipaLower && item.ipaLower.includes(needle)) mid.push(item);
