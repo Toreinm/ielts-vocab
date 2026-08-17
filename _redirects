@@ -1,0 +1,2 @@
+# Force HTTPS (Cloudflare handles SSL on *.pages.dev automatically)
+https://ielts-vocab.pages.dev/*  https://ielts-vocab.pages.dev/:splat  301!

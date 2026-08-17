@@ -1,0 +1,46 @@
+{
+  "name": "IELTS Vocabulary 真经 — Liu Hongbo",
+  "short_name": "IELTS Vocab",
+  "description": "Liu Hongbo's IELTS Vocabulary 真经 — 22 chapters, 3455 words, with OALD definitions, Web Speech TTS, selection-to-define popup, and dark mode. PWA-ready single-page app.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fafaf7",
+  "theme_color": "#fafaf7",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["education", "books", "productivity"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Chapter 1 — Natural Geography",
+      "short_name": "Ch 1",
+      "url": "index.html#ch1"
+    },
+    {
+      "name": "Chapter 22 — Time and Date",
+      "short_name": "Ch 22",
+      "url": "index.html#ch22"
+    }
+  ]
+}
