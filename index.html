@@ -345,6 +345,54 @@
     .topbar{display:none}
   }
 </style>
+<script>
+  // Service worker registration — auto-updates on every deploy
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then(reg => {
+          // If a new SW is already waiting, force it to activate immediately
+          if (reg.waiting) { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
+          reg.addEventListener('updatefound', () => {
+            const sw = reg.installing;
+            if (!sw) return;
+            sw.addEventListener('statechange', () => {
+              if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                sw.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          });
+        })
+        .catch(err => console.warn('SW register failed:', err));
+      // When a new SW takes over, force-reload once so user gets latest content
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+    });
+  }
+
+  // iOS PWA / Web Speech TTS — unlock on first user gesture.
+  // speechSynthesis.speak() silently fails on iOS standalone PWA until a
+  // user gesture has happened. Pre-load a silent utterance on first tap.
+  if ('speechSynthesis' in window) {
+    let unlocked = false;
+    const unlock = () => {
+      if (unlocked) return;
+      unlocked = true;
+      try {
+        const u = new SpeechSynthesisUtterance(' ');
+        u.volume = 0; u.rate = 0.01;
+        window.speechSynthesis.speak(u);
+      } catch (e) {}
+    };
+    ['click', 'touchstart', 'keydown'].forEach(ev => {
+      document.addEventListener(ev, unlock, { once: true, capture: true });
+    });
+  }
+</script>
 </head>
 <body>
 
