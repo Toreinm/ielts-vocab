@@ -171,8 +171,17 @@
   .speak-btn:hover{background:var(--bg-soft)}
   .def-block{margin:6px 0}
   .def-block .label{font-size:10.5px;letter-spacing:.15em;
-    text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+    text-transform:uppercase;color:var(--muted);margin-bottom:3px;
+    display:flex;align-items:center;gap:6px}
   .def-block .text{font-size:16px;color:var(--ink)}
+  .def-speak-btn{background:transparent;border:1px solid var(--rule);
+    border-radius:3px;padding:0 5px;cursor:pointer;font-size:11px;
+    color:var(--accent);line-height:1.4;letter-spacing:0;
+    text-transform:none;font-weight:normal;display:inline-flex;
+    align-items:center;gap:2px}
+  .def-speak-btn:hover{background:var(--bg-soft)}
+  .def-speak-btn.is-playing{background:var(--accent);color:#fff}
+  .def-speak-btn.is-fallback{opacity:.7}
   .examples{margin:6px 0;padding-left:20px}
   .examples li{margin:3px 0;font-size:15px;color:var(--ink-soft)}
   .examples li .cl{background:var(--hilite);padding:1px 4px;
@@ -25106,6 +25115,81 @@ document.querySelectorAll('.word-card').forEach(card => {
     };
     main.appendChild(btn);
   }
+});
+
+/* ============================================================
+   3b. Definition audio — personal recordings (ch1 first 10 words)
+   Word main → file slug map. Audio plays if file exists; TTS fallback otherwise.
+   Does not alter word-head 🔊, search, popup, dark mode, PWA, or TTS.
+   ============================================================ */
+const DEF_AUDIO = {
+  'atmosphere':     'audio/ch1-atmosphere.mp3',
+  'hydrosphere':    'audio/ch1-hydrosphere.mp3',
+  'lithosphere':    'audio/ch1-lithosphere.mp3',
+  'oxygen':         'audio/ch1-oxygen.mp3',
+  'oxide':          'audio/ch1-oxide.mp3',
+  'carbon dioxide': 'audio/ch1-carbon-dioxide.mp3',
+  'hydrogen':       'audio/ch1-hydrogen.mp3',
+  'core':           'audio/ch1-core.mp3',
+  'crust':          'audio/ch1-crust.mp3',
+  'mantle':         'audio/ch1-mantle.mp3',
+};
+let currentDefAudio = null;
+function playDefAudio(btn, src, defText) {
+  if (currentDefAudio) {
+    currentDefAudio.pause();
+    currentDefAudio.currentTime = 0;
+    if (currentDefAudio._btn) currentDefAudio._btn.classList.remove('is-playing');
+  }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  const audio = new Audio(src);
+  currentDefAudio = audio;
+  audio._btn = btn;
+  btn.classList.add('is-playing');
+  audio.addEventListener('ended', () => {
+    btn.classList.remove('is-playing');
+    if (currentDefAudio === audio) currentDefAudio = null;
+  });
+  audio.addEventListener('error', () => {
+    btn.classList.remove('is-playing');
+    btn.classList.add('is-fallback');
+    btn.title = 'Audio not loaded — using TTS';
+    if (currentDefAudio === audio) currentDefAudio = null;
+    speak(cleanForTTS(defText));
+  });
+  audio.play().catch(() => {
+    btn.classList.remove('is-playing');
+    btn.classList.add('is-fallback');
+    btn.title = 'Audio blocked — using TTS';
+    if (currentDefAudio === audio) currentDefAudio = null;
+    speak(cleanForTTS(defText));
+  });
+}
+document.querySelectorAll('.word-card').forEach(card => {
+  const main = card.querySelector('.word-main');
+  const defBlock = card.querySelector('.def-block');
+  if (!main || !defBlock) return;
+  // Use first text node (the actual word) to avoid the appended 🔊 button text
+  const wordKey = (main.firstChild ? main.firstChild.textContent : main.textContent || '').trim().toLowerCase();
+  let src = null;
+  for (const [k, v] of Object.entries(DEF_AUDIO)) {
+    if (k === wordKey) { src = v; break; }
+  }
+  if (!src) return;
+  const label = defBlock.querySelector('.label');
+  if (!label || defBlock.querySelector('.def-speak-btn')) return;
+  const btn = document.createElement('button');
+  btn.className = 'def-speak-btn';
+  btn.type = 'button';
+  btn.innerHTML = '🎤 listen';
+  btn.title = 'Play personal definition recording';
+  const defText = (defBlock.querySelector('.text') || {}).textContent || '';
+  btn.addEventListener('click', ev => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    playDefAudio(btn, src, defText);
+  });
+  label.appendChild(btn);
 });
 
 /* ============================================================
