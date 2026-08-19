@@ -18,11 +18,36 @@ const CORE = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil((async () => {
-    const c = await caches.open(CACHE);
-    await c.addAll(CORE);
-    await self.skipWaiting();
-  })());
+  // Activate the new SW immediately, but don't block install on
+  // precaching the 1.8MB of audio. The HTML <link rel="preload">
+  // already starts the fetch in parallel with HTML parse.
+  e.waitUntil(self.skipWaiting());
+  // Fire-and-forget precache of core + audio (no await, no install delay)
+  (async () => {
+    try {
+      const c = await caches.open(CACHE);
+      await c.addAll(CORE);
+      // Pre-cache the 10 ch1 audio files in parallel
+      const audioUrls = [
+        './audio/ch1-atmosphere.mp3',
+        './audio/ch1-hydrosphere.mp3',
+        './audio/ch1-lithosphere.mp3',
+        './audio/ch1-oxygen.mp3',
+        './audio/ch1-oxide.mp3',
+        './audio/ch1-carbon-dioxide.mp3',
+        './audio/ch1-hydrogen.mp3',
+        './audio/ch1-core.mp3',
+        './audio/ch1-crust.mp3',
+        './audio/ch1-mantle.mp3',
+      ];
+      await Promise.all(audioUrls.map(async url => {
+        try {
+          const fresh = await fetch(url, { cache: 'no-cache' });
+          if (fresh.ok) await c.put(url, fresh.clone());
+        } catch (e) {}
+      }));
+    } catch (e) { /* precache failure is non-fatal */ }
+  })();
 });
 
 self.addEventListener('activate', e => {
