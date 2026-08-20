@@ -4,7 +4,7 @@
    - audio/* + icons: cache-first (audio doesn't change after deploy)
    - on new SW install: skipWaiting + clients.claim so updated SW takes over immediately
 */
-const VERSION = 'v4.0.0';
+const VERSION = 'v4.0.2';
 const CACHE = `ielts-vocab-${VERSION}`;
 const CORE = [
   './',
@@ -18,9 +18,8 @@ const CORE = [
   './ch_data/search-index.json',
   './ch_data/dict/ch1.json',
   './ch_data/dict/ch2.json',
-  // Pre-list 22 chapter chunks so the SW can fetch them as the user
-  // scrolls (pre-cache happens lazily via cache-first fetch handler)
-  ...Array.from({length: 20}, (_, i) => `./ch_data/ch${i + 3}.html`),
+  // Pre-list 20 lazy chapter chunks (no .html ext to avoid CF Pages auto-strip 308)
+  ...Array.from({length: 20}, (_, i) => `./ch_data/ch${i + 3}`),
   // Per-chapter dict JSONs
   ...Array.from({length: 20}, (_, i) => `./ch_data/dict/ch${i + 3}.json`),
   // 10 ch1 audio recordings
