@@ -4,7 +4,7 @@
    - audio/* + icons: cache-first (audio doesn't change after deploy)
    - on new SW install: skipWaiting + clients.claim so updated SW takes over immediately
 */
-const VERSION = 'v3.2.0';
+const VERSION = 'v4.0.0';
 const CACHE = `ielts-vocab-${VERSION}`;
 const CORE = [
   './',
@@ -15,38 +15,52 @@ const CORE = [
   './icon-maskable-512.png',
   './apple-touch-icon.png',
   './favicon.ico',
+  './ch_data/search-index.json',
+  './ch_data/dict/ch1.json',
+  './ch_data/dict/ch2.json',
+  // Pre-list 22 chapter chunks so the SW can fetch them as the user
+  // scrolls (pre-cache happens lazily via cache-first fetch handler)
+  ...Array.from({length: 20}, (_, i) => `./ch_data/ch${i + 3}.html`),
+  // Per-chapter dict JSONs
+  ...Array.from({length: 20}, (_, i) => `./ch_data/dict/ch${i + 3}.json`),
+  // 10 ch1 audio recordings
+  './audio/ch1-atmosphere.mp3',
+  './audio/ch1-hydrosphere.mp3',
+  './audio/ch1-lithosphere.mp3',
+  './audio/ch1-oxygen.mp3',
+  './audio/ch1-oxide.mp3',
+  './audio/ch1-carbon-dioxide.mp3',
+  './audio/ch1-hydrogen.mp3',
+  './audio/ch1-core.mp3',
+  './audio/ch1-crust.mp3',
+  './audio/ch1-mantle.mp3',
 ];
 
 self.addEventListener('install', e => {
-  // Activate the new SW immediately, but don't block install on
-  // precaching the 1.8MB of audio. The HTML <link rel="preload">
-  // already starts the fetch in parallel with HTML parse.
+  // Activate immediately, no install delay
   e.waitUntil(self.skipWaiting());
-  // Fire-and-forget precache of core + audio (no await, no install delay)
+  // Fire-and-forget precache of CORE — only the small ones (icons, manifest,
+  // search-index, dict/ch1+ch2). Chapter chunks and audio are pulled
+  // on-demand via the cache-first fetch handler below.
   (async () => {
     try {
       const c = await caches.open(CACHE);
-      await c.addAll(CORE);
-      // Pre-cache the 10 ch1 audio files in parallel
-      const audioUrls = [
-        './audio/ch1-atmosphere.mp3',
-        './audio/ch1-hydrosphere.mp3',
-        './audio/ch1-lithosphere.mp3',
-        './audio/ch1-oxygen.mp3',
-        './audio/ch1-oxide.mp3',
-        './audio/ch1-carbon-dioxide.mp3',
-        './audio/ch1-hydrogen.mp3',
-        './audio/ch1-core.mp3',
-        './audio/ch1-crust.mp3',
-        './audio/ch1-mantle.mp3',
+      // Pre-cache the truly-tiny assets in parallel
+      const tiny = [
+        './', './index.html', './manifest.json',
+        './icon-192.png', './icon-512.png', './icon-maskable-512.png',
+        './apple-touch-icon.png', './favicon.ico',
+        './ch_data/search-index.json',
+        './ch_data/dict/ch1.json',
+        './ch_data/dict/ch2.json',
       ];
-      await Promise.all(audioUrls.map(async url => {
+      await Promise.all(tiny.map(async url => {
         try {
           const fresh = await fetch(url, { cache: 'no-cache' });
           if (fresh.ok) await c.put(url, fresh.clone());
         } catch (e) {}
       }));
-    } catch (e) { /* precache failure is non-fatal */ }
+    } catch (e) {}
   })();
 });
 
