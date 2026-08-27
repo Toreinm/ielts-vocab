@@ -3991,15 +3991,23 @@ document.addEventListener('mousedown', (e) => {
    Saves ~4MB on initial HTML; user pays ~200KB per chapter on scroll.
    ============================================================ */
 const chapterCache = new Map();  // chNum -> Promise<string>
-function loadChapter(chNum) {
+async function loadChapter(chNum, attempt = 0) {
   if (chapterCache.has(chNum)) return chapterCache.get(chNum);
-  const p = fetch(`./ch_data/ch${chNum}`, { cache: 'force-cache' })
-    .then(r => r.ok ? r.text() : '')
-    .then(html => {
-      // Extract the innerHTML of <section id="chN" ...>...</section>
-      const m = html.match(/<section[^>]*id="ch' + chNum + '"[^>]*>([\s\S]*?)<\/section>/);
-      return m ? m[1] : '';
-    });
+  const p = (async () => {
+    // cache: 'no-store' bypasses any HTTP cache poisoning from old v4.0.0
+    // when the chunk file was a 308-loop. The SW also network-firsts this.
+    const r = await fetch(`./ch_data/ch${chNum}`, { cache: 'no-store' });
+    if (!r.ok) {
+      // 1 retry on transient failure
+      if (attempt < 1) {
+        return loadChapter(chNum, attempt + 1);
+      }
+      throw new Error(`ch${chNum} fetch status ${r.status}`);
+    }
+    const html = await r.text();
+    const m = html.match(/<section[^>]*id="ch' + chNum + '"[^>]*>([\s\S]*?)<\/section>/);
+    return m ? m[1] : '';
+  })();
   chapterCache.set(chNum, p);
   return p;
 }
@@ -4009,7 +4017,12 @@ function ensureChapterLoaded(section) {
   const chNum = chId.replace('ch', '');
   if (!chNum) return Promise.resolve();
   return loadChapter(chNum).then(inner => {
-    if (!inner) return;
+    if (!inner) {
+      // Surface a visible error so we know it's failing
+      const divider = section.querySelector('.list-divider');
+      if (divider) divider.innerHTML += ' <span style="color:#c00;font-weight:bold">⚠ fetch failed</span>';
+      return;
+    }
     section.innerHTML = inner;
     section.dataset.loaded = 'true';
     // Update sidebar count

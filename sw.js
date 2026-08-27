@@ -4,7 +4,7 @@
    - audio/* + icons: cache-first (audio doesn't change after deploy)
    - on new SW install: skipWaiting + clients.claim so updated SW takes over immediately
 */
-const VERSION = 'v4.0.2';
+const VERSION = 'v4.0.4';
 const CACHE = `ielts-vocab-${VERSION}`;
 const CORE = [
   './',
