@@ -360,7 +360,9 @@
 <script>
   // Service worker registration — register IMMEDIATELY (not on load) so
   // SW install can start fetching audio in parallel with HTML parse
-  if ('serviceWorker' in navigator) {
+  if (false && 'serviceWorker' in navigator) {
+    // SW DISABLED for diagnosis: v4.0.4 SW may be blocking lazy fetch
+    // Re-enable after confirming ch3+ loads without it.
     navigator.serviceWorker.register('./sw.js', { scope: './' })
       .then(reg => {
         if (reg.waiting) { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
