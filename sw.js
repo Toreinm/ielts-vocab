@@ -3,10 +3,8 @@
    - HTML / JS: network-first (always get latest), fall back to cache if offline
    - audio/* + icons: cache-first (audio doesn't change after deploy)
    - on new SW install: skipWaiting + clients.claim so updated SW takes over immediately
-   - v4.2.0: removed ch_data/ch* precache (all 22 chapters inlined in index.html;
-     virtual scroll via CSS content-visibility: auto handles the perf)
 */
-const VERSION = 'v4.2.0';
+const VERSION = 'v4.1.0';
 const CACHE = `ielts-vocab-${VERSION}`;
 const CORE = [
   './',
@@ -20,7 +18,9 @@ const CORE = [
   './ch_data/search-index.json',
   './ch_data/dict/ch1.json',
   './ch_data/dict/ch2.json',
-  // Per-chapter dict JSONs (for popup def lookup, lazy fetched on first miss)
+  // Pre-list 20 lazy chapter chunks (no .html ext to avoid CF Pages auto-strip 308)
+  ...Array.from({length: 20}, (_, i) => `./ch_data/ch${i + 3}`),
+  // Per-chapter dict JSONs
   ...Array.from({length: 20}, (_, i) => `./ch_data/dict/ch${i + 3}.json`),
   // 10 ch1 audio recordings
   './audio/ch1-atmosphere.mp3',
@@ -36,11 +36,15 @@ const CORE = [
 ];
 
 self.addEventListener('install', e => {
+  // Activate immediately, no install delay
   e.waitUntil(self.skipWaiting());
-  // Fire-and-forget precache of CORE — only the small ones.
+  // Fire-and-forget precache of CORE — only the small ones (icons, manifest,
+  // search-index, dict/ch1+ch2). Chapter chunks and audio are pulled
+  // on-demand via the cache-first fetch handler below.
   (async () => {
     try {
       const c = await caches.open(CACHE);
+      // Pre-cache the truly-tiny assets in parallel
       const tiny = [
         './', './index.html', './manifest.json',
         './icon-192.png', './icon-512.png', './icon-maskable-512.png',
@@ -88,7 +92,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // HTML / JS / dict JSON: network-first
+  // HTML / JS: network-first
   e.respondWith((async () => {
     const c = await caches.open(CACHE);
     try {

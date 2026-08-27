@@ -154,16 +154,7 @@
   main{max-width:780px;margin:0 auto;padding:22px 24px 60px}
   .word-card{background:var(--card);border:1px solid var(--rule);
     border-radius:8px;padding:24px 28px;margin:14px 0;
-    box-shadow:0 1px 0 var(--popup-shadow);
-    /* Virtual scroll: browser skips rendering cards not in viewport.
-       `auto` = use the natural rendered size after first paint,
-       but reserve 500px as placeholder so scrollbar stays accurate. */
-    content-visibility:auto;
-    contain-intrinsic-size:auto 500px}
-  @supports not (content-visibility:auto){
-    /* Fallback for Firefox (no content-visibility yet): JS IO toggles
-       .is-far to display:none when card is far outside viewport. */
-    .word-card.is-far{display:none}
+    box-shadow:0 1px 0 var(--popup-shadow)}
   .word-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 14px;
     border-bottom:1px solid var(--rule);padding-bottom:10px;margin-bottom:12px}
   .word-num{font-size:12.5px;color:var(--muted);
@@ -25009,64 +25000,6 @@ async function ensureDictLoaded(chapterId) {
     }
   } catch (e) { /* swallow — wordIndex stays partial */ }
 }
-
-/* ============================================================
-   1b. Virtual scroll fallback (Firefox only — Chrome/Safari/Edge
-   already handle this via CSS content-visibility: auto on .word-card).
-
-   No fetch, no innerHTML, no regex. Just toggle a class on existing
-   DOM nodes based on viewport proximity.
-   ============================================================ */
-(function setupVirtualScroll() {
-  // Feature-detect: CSS content-visibility supported?
-  const supportsCV = CSS.supports('content-visibility', 'auto');
-  if (supportsCV) {
-    // Chrome/Safari/Edge: browser already skips rendering off-screen cards.
-    // Nothing to do.
-    return;
-  }
-  // Firefox path: use IntersectionObserver to toggle .is-far (display:none).
-  // 600px rootMargin = pre-load one card-height ahead of viewport.
-  const cards = document.querySelectorAll('.word-card');
-  if (!('IntersectionObserver' in window) || cards.length === 0) return;
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-      if (e.isIntersecting) {
-        e.target.classList.remove('is-far');
-        io.unobserve(e.target);
-      }
-    }
-  }, { rootMargin: '600px 0px' });
-  // Mark everything outside an initial 1-viewport band as far, then observe.
-  const vh = window.innerHeight || 800;
-  cards.forEach((c, i) => {
-    const r = c.getBoundingClientRect();
-    // Use document-relative position: if card is >2 viewports below top, hide.
-    const top = r.top + window.scrollY;
-    if (top > vh * 3 || top < -vh) {
-      c.classList.add('is-far');
-    } else {
-      io.observe(c);
-    }
-  });
-  // Re-evaluate on scroll for cards not yet observed.
-  let scrollTicking = false;
-  window.addEventListener('scroll', () => {
-    if (scrollTicking) return;
-    scrollTicking = true;
-    requestAnimationFrame(() => {
-      cards.forEach(c => {
-        if (!c.classList.contains('is-far')) return;
-        const r = c.getBoundingClientRect();
-        if (r.top < window.innerHeight + 600 && r.bottom > -600) {
-          c.classList.remove('is-far');
-          io.observe(c);
-        }
-      });
-      scrollTicking = false;
-    });
-  }, { passive: true });
-})();
 
 /* ============================================================
    2. Selection popup
