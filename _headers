@@ -12,6 +12,12 @@
 /manifest.json
   Cache-Control: public, max-age=3600
 
+# Lazy chapter chunks — no .html ext, force text/html so fetch().text()
+# is unambiguous and CORB doesn't kick in
+/ch_data/ch*
+  Content-Type: text/html; charset=utf-8
+  Cache-Control: public, max-age=3600, must-revalidate
+
 # Main HTML — short cache so updates propagate fast
 /
   Cache-Control: public, max-age=300, must-revalidate
