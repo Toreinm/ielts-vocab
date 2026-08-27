@@ -4017,6 +4017,18 @@ async function loadChapter(chNum, attempt = 0) {
     }
     const html = await r.text();
     const m = html.match(/<section[^>]*id="ch' + chNum + '"[^>]*>([\s\S]*?)<\/section>/);
+    // DEBUG: capture what we got
+    window.__chapterFetchDebug = window.__chapterFetchDebug || [];
+    window.__chapterFetchDebug.push({
+      chNum,
+      status: r.status,
+      ct: r.headers.get('content-type'),
+      htmlLen: html.length,
+      htmlHead: html.slice(0, 200),
+      htmlTail: html.slice(-200),
+      matchFound: !!m,
+      matchLen: m ? m[1].length : 0,
+    });
     return m ? m[1] : '';
   })();
   chapterCache.set(chNum, p);
